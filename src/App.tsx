@@ -1,58 +1,31 @@
 import { useMachine } from '@xstate/react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import * as API from './api';
 import { publicContract } from './utils/public-contract';
 import { wavePortalMachine } from './wave-portal.machine';
 
-interface Wave {
-  address: string;
-  timestamp: Date;
-  message: string;
-}
-
 function App() {
-  const [current, send] = useMachine(wavePortalMachine, { devTools: true });
+  const [current, send] = useMachine(wavePortalMachine);
   const queryClient = useQueryClient();
-  const waveCountQuery = useQuery<number>(
-    'waveCount',
-    async () => {
-      const count = await publicContract.getTotalWaves();
-      return count.toNumber();
-    },
-    { enabled: Boolean(current.context.contract) }
-  );
+  const waveCountQuery = useQuery<number>('waveCount', API.getWaveCount);
   const waveMutation = useMutation('waveMutation', async () => {
-    const waveTxn = await current.context.contract!.wave(
-      current.context.message,
-      { gasLimit: 300000 }
-    );
-    await waveTxn.wait();
-    const data = queryClient.getQueryData<number>('waveCount');
-    queryClient.setQueryData('waveCount', data! + 1);
-    queryClient.invalidateQueries('waveCount');
-    queryClient.invalidateQueries('waves');
+    await API.wave(current.context.contract!, current.context.message);
     send('CLEAR_MESSAGE');
   });
-  const wavesQuery = useQuery<Wave[]>(
-    'waves',
-    async () => {
-      const waves = await publicContract.getAllWaves();
+  const wavesQuery = useQuery('waves', API.getAllWaves);
 
-      let allWaves: Wave[] = [];
-
-      for (const wave of waves) {
-        allWaves = [
-          {
-            address: wave.waver,
-            timestamp: new Date(wave.timestamp * 1000),
-            message: wave.message,
-          },
-          ...allWaves,
-        ];
-      }
-
-      return allWaves;
-    },
-    { enabled: Boolean(current.context.contract) }
+  publicContract.on(
+    'NewWave',
+    (from: string, timestamp: number, message: string) => {
+      queryClient.setQueryData<API.Wave[]>('waves', (waves) => [
+        { address: from, timestamp: new Date(timestamp * 1000), message },
+        ...(waves || []),
+      ]);
+      queryClient.setQueryData<number>(
+        'waveCount',
+        (count) => (count ?? 0) + 1
+      );
+    }
   );
 
   return (

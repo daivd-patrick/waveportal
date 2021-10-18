@@ -3,13 +3,13 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { inspect } from '@xstate/inspect';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { QueryClient, QueryClientProvider } from 'react-query';
+// import { inspect } from '@xstate/inspect';
 
-inspect({
-  iframe: false,
-});
+// inspect({
+//   iframe: false,
+// });
 
 const queryClient = new QueryClient();
 
