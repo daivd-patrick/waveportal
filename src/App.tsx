@@ -106,7 +106,7 @@ function App() {
             </div>
           ) : ['waitingForWallet', 'connectingWallet'].some(current.matches) ? (
             <button
-              className="px-4 py-2 rounded-xl mx-auto bg-gray-200"
+              className="px-4 py-2 rounded-xl mx-auto border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
               onClick={() => send('CONNECT_WALLET')}
             >
               {current.matches('connectingWallet')
