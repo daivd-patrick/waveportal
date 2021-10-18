@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-const contractAddress = '0xF2a493DC081d02EA6caA72672Bc38A85aB3588E3';
+const contractAddress = '0x0C3EB93A6C370b2B9F6C1095433ff4C6857fe691';
 const contractABI = abi.abi;
 
 export const wavePortalMachine = createMachine(
@@ -36,7 +36,7 @@ export const wavePortalMachine = createMachine(
         on: {
           CONNECT_WALLET: 'connectingWallet',
         },
-        exit: 'clearError',
+        exit: ['clearError'],
       },
       connectingWallet: {
         invoke: {
@@ -56,12 +56,14 @@ export const wavePortalMachine = createMachine(
           UPDATE_MESSAGE: { actions: 'updateMessage' },
           CLEAR_MESSAGE: { actions: 'clearMessage' },
         },
-        exit: 'clearError',
       },
     },
   },
   {
     actions: {
+      updateMessage: assign((_, event) => ({
+        message: (event as any).value,
+      })),
       clearError: assign((_) => ({
         error: null,
       })),
@@ -83,9 +85,9 @@ export const wavePortalMachine = createMachine(
 
         return { contract: wavePortalContract };
       }),
-      clearMessage: (_) => ({
+      clearMessage: assign((_) => ({
         message: '',
-      }),
+      })),
     },
     services: {
       checkForWallet: () =>
