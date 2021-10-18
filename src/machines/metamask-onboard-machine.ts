@@ -1,6 +1,6 @@
 import { assign, createMachine } from 'xstate';
 import { Contract, ethers } from 'ethers';
-import { contractAddress, contractABI } from './utils/constants';
+import { contractAddress, contractABI } from '../utils/constants';
 
 declare global {
   interface Window {
@@ -8,10 +8,10 @@ declare global {
   }
 }
 
-export const wavePortalMachine = createMachine(
+export const metamaskOnboardMachine = createMachine(
   {
-    id: 'wave-portal',
-    initial: 'checkingIfWalletIsConnected',
+    id: 'metamask-onboard',
+    initial: 'checkingMetamaskInstallation',
     context: {
       error: null as string | null,
       message: '',
@@ -19,12 +19,25 @@ export const wavePortalMachine = createMachine(
       contract: null as Contract | null,
     },
     states: {
-      checkingMetamaskInstallation: {},
+      checkingMetamaskInstallation: {
+        always: [
+          {
+            target: 'checkingIfWalletIsConnected',
+            cond: 'isMetamaskInstalled',
+          },
+          { target: 'metamaskNotInstalled' },
+        ],
+      },
+      metamaskNotInstalled: {
+        on: {
+          RETRY_METAMASK_CHECK: 'checkingMetamaskInstallation',
+        },
+      },
       checkingIfWalletIsConnected: {
         invoke: {
           src: 'checkForWallet',
           onDone: {
-            target: 'idle',
+            target: 'walletConnected',
             actions: ['setAccount', 'setContract'],
           },
           onError: 'waitingForWallet',
@@ -52,22 +65,10 @@ export const wavePortalMachine = createMachine(
       walletConnected: {
         type: 'final',
       },
-      idle: {
-        on: {
-          UPDATE_MESSAGE: { actions: 'updateMessage' },
-          CLEAR_MESSAGE: { actions: 'clearMessage' },
-        },
-      },
     },
   },
   {
     actions: {
-      updateMessage: assign((_, event) => ({
-        message: (event as any).value,
-      })),
-      clearError: assign((_) => ({
-        error: null,
-      })),
       setError: assign((_, event) => ({
         error: (event as any).data,
       })),
@@ -86,9 +87,6 @@ export const wavePortalMachine = createMachine(
 
         return { contract: wavePortalContract };
       }),
-      clearMessage: assign((_) => ({
-        message: '',
-      })),
     },
     services: {
       checkForWallet: () =>
@@ -129,6 +127,9 @@ export const wavePortalMachine = createMachine(
             reject(`Could not connect to wallet: ${(error as any)?.message}`);
           }
         }),
+    },
+    guards: {
+      isMetamaskInstalled: () => Boolean(window.ethereum),
     },
   }
 );

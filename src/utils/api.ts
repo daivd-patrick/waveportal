@@ -1,5 +1,5 @@
 import { Contract } from 'ethers';
-import { publicContract } from './utils/public-contract';
+import { publicContract } from './public-contract';
 
 export interface Wave {
   address: string;
@@ -35,4 +35,12 @@ export async function getAllWaves() {
   }
 
   return allWaves;
+}
+
+export async function getTopWaver() {
+  const topWaverData = await publicContract.getTopWaver();
+  return {
+    waver: topWaverData.waver,
+    waves: topWaverData.waves.toNumber(),
+  } as { waver: string; waves: number };
 }

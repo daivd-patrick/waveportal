@@ -1,18 +1,17 @@
 import { useMachine } from '@xstate/react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import * as API from './api';
+import { useQueryClient } from 'react-query';
+import * as API from './utils/api';
 import { publicContract } from './utils/public-contract';
-import { wavePortalMachine } from './wave-portal.machine';
+import { metamaskOnboardMachine } from './machines/metamask-onboard-machine';
+import { WaveComposer } from './components/wave-composer';
+import { WaveList } from './components/wave-list';
+import { TopWaverBanner } from './components/top-waver-banner';
 
 function App() {
-  const [current, send] = useMachine(wavePortalMachine);
-  const queryClient = useQueryClient();
-  const waveCountQuery = useQuery<number>('waveCount', API.getWaveCount);
-  const waveMutation = useMutation('waveMutation', async () => {
-    await API.wave(current.context.contract!, current.context.message);
-    send('CLEAR_MESSAGE');
+  const [current, send] = useMachine(metamaskOnboardMachine, {
+    devTools: true,
   });
-  const wavesQuery = useQuery('waves', API.getAllWaves);
+  const queryClient = useQueryClient();
 
   publicContract.on(
     'NewWave',
@@ -35,10 +34,55 @@ function App() {
           👋 Hey there!
         </h1>
         <p className="text-gray-600 max-w-md">
-          I am Andres and I am learning web3 and smart contracts!
+          I am Andres and I am learning about web3 and smart contracts. Wave at
+          me by sending a message and you may win some ETH in the process!
         </p>
-        <div className="space-x-2 w-full ml-auto">
-          {['waitingForWallet', 'connectingWallet'].some(current.matches) && (
+        <div className="space-x-2 h-24 w-full ml-auto flex items-center">
+          {current.matches('checkingMetamaskInstallation') ? (
+            'Checking Metamask installation'
+          ) : current.matches('metamaskNotInstalled') ? (
+            <div className="rounded-md bg-yellow-50 p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-yellow-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    Metamask is not installed
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>
+                      You will need the Metamask browser extension to send a
+                      wave!
+                    </p>
+                  </div>
+                  <div className="mt-4">
+                    <div className="-mx-2 -my-1.5 flex">
+                      <button
+                        type="button"
+                        className="bg-yellow-50 px-2 py-1.5 rounded-md text-sm font-medium text-yellow-800 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-yellow-50 focus:ring-yellow-600"
+                        onClick={() => send('RETRY_METAMASK_CHECK')}
+                      >
+                        I downloaded the extension, check again
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : ['waitingForWallet', 'connectingWallet'].some(current.matches) ? (
             <button
               className="px-4 py-2 rounded-xl bg-gray-200"
               onClick={() => send('CONNECT_WALLET')}
@@ -47,106 +91,24 @@ function App() {
                 ? 'Continue in Metamask 🦊'
                 : 'Connect Wallet'}
             </button>
-          )}
-          {current.matches('checkingIfWalletIsConnected') && (
+          ) : current.matches('checkingIfWalletIsConnected') ? (
             <div>Loading wallet...</div>
-          )}
-          {current.matches('idle') && (
-            <div className="flex items-center space-x-2 w-full">
-              <input
-                type="text"
-                name="email"
-                id="email"
-                className="flex-1 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Send a message!"
-                value={current.context.message}
-                onChange={(e) => {
-                  send({
-                    type: 'UPDATE_MESSAGE',
-                    value: e.target.value,
-                  } as any);
-                }}
-              />
-              <button
-                type="button"
-                className="px-4 py-2 bg-blue-500 rounded-xl hover:bg-blue-600 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                onClick={() => waveMutation.mutate()}
-                disabled={waveMutation.isLoading}
-              >
-                {waveMutation.isLoading ? 'Mining...' : 'Send 👋'}
-              </button>
-            </div>
+          ) : current.matches('walletConnected') ? (
+            <WaveComposer
+              contract={current.context.contract!}
+              account={current.context.account!}
+            />
+          ) : (
+            'Unhandled state!'
           )}
         </div>
       </div>
-      {current.matches('idle') && (
-        <div className="max-w-md mx-auto mt-8">
-          <div>Account: {current.context.account}</div>
-          <div>
-            {waveCountQuery.isLoading
-              ? 'Loading wave data...'
-              : waveCountQuery.isError
-              ? 'There was an error fetching wave data :('
-              : `Total waves: ${waveCountQuery.data}`}
-          </div>
-          <ul className="mt-8 space-y-4">
-            {wavesQuery.isLoading
-              ? 'Loading waves...'
-              : wavesQuery.isError
-              ? 'Error fetching waves feed :('
-              : wavesQuery.data!.length === 0
-              ? 'Be the first to wave!'
-              : wavesQuery.data!.map((wave) => {
-                  const from = wave.address.substr(2, 6);
-                  const to = wave.address.substr(wave.address.length - 6);
-
-                  return (
-                    <li
-                      key={wave.address + wave.timestamp.toISOString()}
-                      className="space-x-2 flex"
-                    >
-                      <div
-                        className="w-10 h-10 flex-shrink-0 rounded-full inline-block"
-                        style={{
-                          backgroundImage: `linear-gradient(to bottom, #${from}, #${to})`,
-                        }}
-                      />
-                      <div className="inline-block relative rounded-2xl px-6 py-4 bg-gray-200 w-full">
-                        <small className="font-mono text-gray-600 font-medium">
-                          {wave.address}
-                        </small>
-                        <div className="my-2">{wave.message}</div>
-                        <time
-                          dateTime={wave.timestamp.toISOString()}
-                          className="absolute bottom-3 right-3 text-xs text-gray-600"
-                        >
-                          {
-                            [
-                              'Jan.',
-                              'Feb.',
-                              'Mar.',
-                              'Apr.',
-                              'May',
-                              'Jun.',
-                              'Jul.',
-                              'Aug.',
-                              'Sep.',
-                              'Oct.',
-                              'Nov.',
-                              'Dec.',
-                            ][wave.timestamp.getMonth()]
-                          }{' '}
-                          {wave.timestamp.getDay()}
-                          {2020 !== new Date().getFullYear() &&
-                            `, ${wave.timestamp.getFullYear()}`}
-                        </time>
-                      </div>
-                    </li>
-                  );
-                })}
-          </ul>
+      <div className="max-w-md mx-auto mt-8">
+        <div className="mt-8 pb-16">
+          <WaveList />
         </div>
-      )}
+      </div>
+      <TopWaverBanner />
     </div>
   );
 }
