@@ -17,7 +17,7 @@ export function WaveComposer({
   });
 
   return (
-    <div className="flex items-center space-x-2 w-full">
+    <div className="flex flex-col justify-center space-y-2 w-full">
       <div className="relative rounded-md shadow-sm flex-1">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <AccountAvatar className="h-5 w-5" account={account} />
@@ -31,14 +31,16 @@ export function WaveComposer({
           value={message}
         />
       </div>
-      <button
-        type="button"
-        className="px-4 py-2 bg-blue-500 rounded-xl hover:bg-blue-600 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-        onClick={() => waveMutation.mutate()}
-        disabled={waveMutation.isLoading}
-      >
-        {waveMutation.isLoading ? 'Mining...' : 'Send 👋'}
-      </button>
+      <div>
+        <button
+          type="button"
+          className="px-4 py-2 bg-blue-500 rounded-xl hover:bg-blue-600 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          onClick={() => waveMutation.mutate()}
+          disabled={waveMutation.isLoading}
+        >
+          {waveMutation.isLoading ? 'Mining...' : 'Send 👋'}
+        </button>
+      </div>
     </div>
   );
 }
