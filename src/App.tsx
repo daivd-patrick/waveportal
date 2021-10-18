@@ -125,7 +125,6 @@ function App() {
               ? 'Be the first to wave!'
               : wavesQuery.data!.map((wave) => {
                   const from = wave.address.substr(2, 6);
-                  const stop = wave.address.substr(20, 6);
                   const to = wave.address.substr(wave.address.length - 6);
 
                   return (
@@ -136,7 +135,7 @@ function App() {
                       <div
                         className="w-10 h-10 flex-shrink-0 rounded-full inline-block"
                         style={{
-                          backgroundImage: `linear-gradient(to bottom, #${from}, #${stop}, #${to})`,
+                          backgroundImage: `linear-gradient(to bottom, #${from}, #${to})`,
                         }}
                       />
                       <div className="inline-block relative rounded-2xl px-6 py-4 bg-gray-200 w-full">
