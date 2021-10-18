@@ -5,11 +5,11 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import { inspect } from '@xstate/inspect';
+// import { inspect } from '@xstate/inspect';
 
-inspect({
-  iframe: false,
-});
+// inspect({
+//   iframe: false,
+// });
 
 const queryClient = new QueryClient();
 
