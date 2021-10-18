@@ -1,15 +1,12 @@
 import { assign, createMachine } from 'xstate';
 import { Contract, ethers } from 'ethers';
-import abi from './utils/WavePortal.json';
+import { contractAddress, contractABI } from './utils/constants';
 
 declare global {
   interface Window {
     ethereum: any;
   }
 }
-
-const contractAddress = '0x0C3EB93A6C370b2B9F6C1095433ff4C6857fe691';
-const contractABI = abi.abi;
 
 export const wavePortalMachine = createMachine(
   {
@@ -22,6 +19,7 @@ export const wavePortalMachine = createMachine(
       contract: null as Contract | null,
     },
     states: {
+      checkingMetamaskInstallation: {},
       checkingIfWalletIsConnected: {
         invoke: {
           src: 'checkForWallet',
@@ -42,7 +40,7 @@ export const wavePortalMachine = createMachine(
         invoke: {
           src: 'connectWallet',
           onDone: {
-            target: 'idle',
+            target: 'walletConnected',
             actions: ['setAccount', 'setContract'],
           },
           onError: {
@@ -50,6 +48,9 @@ export const wavePortalMachine = createMachine(
             actions: 'setError',
           },
         },
+      },
+      walletConnected: {
+        type: 'final',
       },
       idle: {
         on: {

@@ -1,6 +1,13 @@
 import { useMachine } from '@xstate/react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { publicContract } from './utils/public-contract';
 import { wavePortalMachine } from './wave-portal.machine';
+
+interface Wave {
+  address: string;
+  timestamp: Date;
+  message: string;
+}
 
 function App() {
   const [current, send] = useMachine(wavePortalMachine, { devTools: true });
@@ -8,14 +15,15 @@ function App() {
   const waveCountQuery = useQuery<number>(
     'waveCount',
     async () => {
-      const count = await current.context.contract!.getTotalWaves();
+      const count = await publicContract.getTotalWaves();
       return count.toNumber();
     },
     { enabled: Boolean(current.context.contract) }
   );
-  const waveMutation = useMutation(async () => {
+  const waveMutation = useMutation('waveMutation', async () => {
     const waveTxn = await current.context.contract!.wave(
-      current.context.message
+      current.context.message,
+      { gasLimit: 300000 }
     );
     await waveTxn.wait();
     const data = queryClient.getQueryData<number>('waveCount');
@@ -24,26 +32,31 @@ function App() {
     queryClient.invalidateQueries('waves');
     send('CLEAR_MESSAGE');
   });
-  const wavesQuery = useQuery<
-    { address: string; timestamp: Date; message: string }[]
-  >(
+  const wavesQuery = useQuery<Wave[]>(
     'waves',
     async () => {
-      const waves = await current.context.contract!.getAllWaves();
-      console.log(waves);
-      return waves.map(
-        (wave: { waver: string; timestamp: number; message: string }) => ({
-          address: wave.waver,
-          timestamp: new Date(wave.timestamp * 1000),
-          message: wave.message,
-        })
-      );
+      const waves = await publicContract.getAllWaves();
+
+      let allWaves: Wave[] = [];
+
+      for (const wave of waves) {
+        allWaves = [
+          {
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message,
+          },
+          ...allWaves,
+        ];
+      }
+
+      return allWaves;
     },
     { enabled: Boolean(current.context.contract) }
   );
 
   return (
-    <div className="container mx-auto p-10">
+    <div className="container mx-auto p-4 sm:p-10">
       <div className="max-w-md mx-auto flex flex-col items-center space-y-8">
         <h1 className="text-4xl font-bold text-gray-900 text-center">
           👋 Hey there!
@@ -110,16 +123,55 @@ function App() {
               ? 'Error fetching waves feed :('
               : wavesQuery.data!.length === 0
               ? 'Be the first to wave!'
-              : wavesQuery.data!.map((wave) => (
-                  <li
-                    key={wave.address + wave.timestamp.toISOString()}
-                    className="rounded-2xl px-6 py-4 bg-gray-200"
-                  >
-                    <div>Address: {wave.address}</div>
-                    <div>Time: {wave.timestamp.toString()}</div>
-                    <div>Message: {wave.message}</div>
-                  </li>
-                ))}
+              : wavesQuery.data!.map((wave) => {
+                  const from = wave.address.substr(2, 6);
+                  const stop = wave.address.substr(20, 6);
+                  const to = wave.address.substr(wave.address.length - 6);
+
+                  return (
+                    <li
+                      key={wave.address + wave.timestamp.toISOString()}
+                      className="space-x-2 flex"
+                    >
+                      <div
+                        className="w-10 h-10 flex-shrink-0 rounded-full inline-block"
+                        style={{
+                          backgroundImage: `linear-gradient(to bottom, #${from}, #${stop}, #${to})`,
+                        }}
+                      />
+                      <div className="inline-block relative rounded-2xl px-6 py-4 bg-gray-200 w-full">
+                        <small className="font-mono text-gray-600 font-medium">
+                          {wave.address}
+                        </small>
+                        <div className="my-2">{wave.message}</div>
+                        <time
+                          dateTime={wave.timestamp.toISOString()}
+                          className="absolute bottom-3 right-3 text-xs text-gray-600"
+                        >
+                          {
+                            [
+                              'Jan.',
+                              'Feb.',
+                              'Mar.',
+                              'Apr.',
+                              'May',
+                              'Jun.',
+                              'Jul.',
+                              'Aug.',
+                              'Sep.',
+                              'Oct.',
+                              'Nov.',
+                              'Dec.',
+                            ][wave.timestamp.getMonth()]
+                          }{' '}
+                          {wave.timestamp.getDay()}
+                          {2020 !== new Date().getFullYear() &&
+                            `, ${wave.timestamp.getFullYear()}`}
+                        </time>
+                      </div>
+                    </li>
+                  );
+                })}
           </ul>
         </div>
       )}
