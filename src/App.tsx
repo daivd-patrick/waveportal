@@ -39,7 +39,29 @@ function App() {
         </p>
         <div className="space-x-2 h-24 w-full ml-auto flex items-center">
           {current.matches('checkingMetamaskInstallation') ? (
-            'Checking Metamask installation'
+            <div className="mx-auto text-gray-500 flex items-center">
+              <span>Checking Metamask installation</span>
+              <svg
+                className="animate-spin ml-3 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            </div>
           ) : current.matches('metamaskNotInstalled') ? (
             <div className="rounded-md bg-yellow-50 p-4">
               <div className="flex">
@@ -92,7 +114,29 @@ function App() {
                 : 'Connect Wallet'}
             </button>
           ) : current.matches('checkingIfWalletIsConnected') ? (
-            <div>Loading wallet...</div>
+            <div className="mx-auto text-gray-500 flex items-center">
+              <span>Loading wallet</span>
+              <svg
+                className="animate-spin ml-3 h-5 w-5"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            </div>
           ) : current.matches('walletConnected') ? (
             <WaveComposer
               contract={current.context.contract!}
