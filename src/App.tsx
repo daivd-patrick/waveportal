@@ -28,21 +28,25 @@ function App() {
   );
 
   return (
-    <div className="container mx-auto p-4 sm:p-10">
-      <div className="max-w-md mx-auto flex flex-col items-center space-y-8">
-        <h1 className="text-4xl font-bold text-gray-900 text-center">
+    <div className="container p-4 mx-auto sm:p-10">
+      <div className="flex flex-col items-center max-w-md mx-auto">
+        <h1 className="text-4xl font-bold text-center text-gray-900">
           👋 Hey there!
         </h1>
-        <p className="text-gray-600 max-w-md">
+        <p className="max-w-md mt-8 text-gray-600">
           I am Andres and I am learning about web3 and smart contracts. Wave at
           me by sending a message and you may win some ETH in the process!
         </p>
-        <div className="space-x-2 h-24 w-full ml-auto flex items-center">
+        <p className="max-w-md mt-2 text-gray-600">
+          Connect your wallet on the Rinkeby network and get that top waver
+          spot.
+        </p>
+        <div className="flex items-center w-full h-24 mt-4 ml-auto space-x-2">
           {current.matches('checkingMetamaskInstallation') ? (
-            <div className="mx-auto text-gray-500 flex items-center">
+            <div className="flex items-center mx-auto text-gray-500">
               <span>Checking Metamask installation</span>
               <svg
-                className="animate-spin ml-3 h-5 w-5"
+                className="w-5 h-5 ml-3 animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -63,12 +67,12 @@ function App() {
               </svg>
             </div>
           ) : current.matches('metamaskNotInstalled') ? (
-            <div className="rounded-md bg-yellow-50 p-4">
+            <div className="p-4 rounded-md bg-yellow-50">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-yellow-400"
+                    className="w-5 h-5 text-yellow-400"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                     aria-hidden="true"
@@ -86,8 +90,16 @@ function App() {
                   </h3>
                   <div className="mt-2 text-sm text-yellow-700">
                     <p>
-                      You will need the Metamask browser extension to send a
-                      wave!
+                      You will need the{' '}
+                      <a
+                        className="underline"
+                        href="https://metamask.io/"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Metamask
+                      </a>{' '}
+                      browser extension to send a wave!
                     </p>
                   </div>
                   <div className="mt-4">
@@ -106,7 +118,7 @@ function App() {
             </div>
           ) : ['waitingForWallet', 'connectingWallet'].some(current.matches) ? (
             <button
-              className="px-4 py-2 rounded-xl mx-auto border-2 border-blue-500 text-blue-500 hover:bg-blue-50"
+              className="px-4 py-2 mx-auto text-blue-500 border-2 border-blue-500 rounded-xl hover:bg-blue-50"
               onClick={() => send('CONNECT_WALLET')}
             >
               {current.matches('connectingWallet')
@@ -114,10 +126,10 @@ function App() {
                 : 'Connect Wallet'}
             </button>
           ) : current.matches('checkingIfWalletIsConnected') ? (
-            <div className="mx-auto text-gray-500 flex items-center">
+            <div className="flex items-center mx-auto text-gray-500">
               <span>Loading wallet</span>
               <svg
-                className="animate-spin ml-3 h-5 w-5"
+                className="w-5 h-5 ml-3 animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -148,7 +160,7 @@ function App() {
         </div>
       </div>
       <div className="max-w-md mx-auto mt-8">
-        <div className="mt-8 pb-16">
+        <div className="pb-16 mt-8">
           <WaveList />
         </div>
       </div>
