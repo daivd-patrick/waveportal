@@ -19,22 +19,22 @@ export function TopWaverBanner() {
   const { waver, waves } = topWaverQuery.data!;
 
   return (
-    <div className="fixed bottom-0 inset-x-0 pb-2 sm:pb-5">
-      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-        <div className="p-2 rounded-lg bg-indigo-600 shadow-lg sm:p-3">
-          <div className="flex items-center justify-between flex-wrap">
-            <div className="w-0 flex-1 flex items-center">
-              <span className="flex p-2 rounded-lg bg-indigo-800">
+    <div className="fixed inset-x-0 bottom-0 pb-2 sm:pb-5">
+      <div className="px-2 mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div className="p-2 bg-indigo-600 rounded-lg shadow-lg sm:p-3">
+          <div className="flex flex-wrap items-center justify-between">
+            <div className="flex items-center flex-1 w-0">
+              <span className="flex p-2 bg-indigo-800 rounded-lg">
                 <AccountAvatar
-                  className="h-6 w-6 border border-white"
+                  className="w-6 h-6 border border-white"
                   account={waver}
                 />
               </span>
               <p className="ml-3 font-medium text-white truncate">
-                <span className="md:hidden">
+                <span className="text-sm md:hidden">
                   Top waver is{' '}
                   <a href={`https://rinkeby.etherscan.io/address/${waver}`}>
-                    <div className="inline-block bg-indigo-800 py-1 px-2 rounded-lg hover:underline text-sm font-mono">
+                    <div className="inline-block px-2 py-1 font-mono text-sm bg-indigo-800 rounded-lg hover:underline">
                       {waver.substr(0, 4)}...{waver.substr(waver.length - 4)}
                     </div>
                   </a>{' '}
@@ -44,9 +44,9 @@ export function TopWaverBanner() {
                   Top waver is{' '}
                   <a
                     href={`https://rinkeby.etherscan.io/address/${waver}`}
-                    className="hover:underline text-sm font-mono"
+                    className="font-mono text-sm hover:underline"
                   >
-                    <div className="inline-block bg-indigo-800 py-1 px-2 rounded-lg hover:underline text-sm font-mono">
+                    <div className="inline-block px-2 py-1 font-mono text-sm bg-indigo-800 rounded-lg hover:underline">
                       {waver}
                     </div>
                   </a>{' '}
